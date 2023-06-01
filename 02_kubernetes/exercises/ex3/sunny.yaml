@@ -6,12 +6,14 @@ metadata:
 spec:
   containers:
     - name: sunnybikes-api
-      image: pugillum/sunnybikes:v1
+      image: pugillum/sunnybikes:stable
       env:
         - name: PG_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgres-secret
               key: POSTGRES_PASSWORD
-        - name: PG_PORT
-          value: "5432"
+      readinessProbe:
+        httpGet:
+          port: 5000
+          path: /healthz
