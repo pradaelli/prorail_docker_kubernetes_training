@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres
+  namespace: sunnybikes
+spec:
+  containers:
+    - name: postgres-db
+      image: postgres:11-alpine
+      env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+      volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d/
+          name: init
+  volumes:
+    - name: init
+      configMap:
+        name: postgres-init
+        items:
+          - key: init-schema.sql
+            path: init-schema.sql

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sunnybikes
+  namespace: sunnybikes
+spec:
+  containers:
+    - name: sunnybikes-api
+      image: pugillum/sunnybikes:stable
+      env:
+        - name: PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: PG_PORT
+          value: "5432"
