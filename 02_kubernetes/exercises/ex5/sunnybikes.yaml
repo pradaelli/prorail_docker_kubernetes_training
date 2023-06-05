@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sunnybikes
+  namespace: sunnybikes
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 2
+  selector:
+    matchLabels:
+      app: sunnybikes
+  template:
+    metadata:
+      labels:
+        app: sunnybikes
+    spec:
+      containers:
+        - name: sunnybikes
+          image: pugillum/sunnybikes:stable
+          imagePullPolicy: Always
+          env:
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: PG_HOST
+              value: postgres.sunnybikes.svc.cluster.local
+            - name: PG_PORT
+              value: "5432"
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              port: 5000
+              path: /healthz
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sunnybikes
+  namespace: sunnybikes
+spec:
+  type: LoadBalancer
+  selector:
+    app: sunnybikes
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP

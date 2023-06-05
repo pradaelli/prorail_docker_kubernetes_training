@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: sunnybikes
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres-db
+          image: postgres:11-alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d/
+              name: init
+      volumes:
+        - name: init
+          configMap:
+            name: postgres-init
+            items:
+              - key: init-schema.sql
+                path: init-schema.sql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: sunnybikes
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
