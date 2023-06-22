@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+  labels:
+    app: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+  type: ClusterIP
+  ports:
+    - name: tempo
+      port: {{ .Values.grafanaTempo.ports.backend }}
+      targetPort: tempo
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.grafanaTempo.ports.grpc }}
+      targetPort: grpc
+      protocol: TCP

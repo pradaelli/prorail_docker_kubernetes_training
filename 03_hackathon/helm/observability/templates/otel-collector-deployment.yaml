@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.otelCollector.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-{{ .Values.otelCollector.name }}
+  template:
+    metadata:
+      name: {{ .Release.Name }}-{{ .Values.otelCollector.name }}
+      labels:
+        app: {{ .Release.Name }}-{{ .Values.otelCollector.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/otel-collector-configmap.yaml") . | sha256sum }}
+    spec:
+      volumes:
+        - name: {{ .Values.otelCollector.name }}-config
+          configMap:
+            name: {{ .Release.Name }}-{{ .Values.otelCollector.name }}-config
+      containers:
+        - name: {{ .Release.Name }}-{{ .Values.otelCollector.name }}
+          image: "{{ .Values.otelCollector.repository }}:{{ .Values.otelCollector.tag}}"
+          args:
+            - --config=/etc/otel-collector.yaml
+          ports:
+            - containerPort: {{ .Values.otelCollector.ports.grpc }}
+              name: grpc
+          volumeMounts:
+            - name: {{ .Values.otelCollector.name }}-config
+              mountPath: /etc/otel-collector.yaml
+              subPath: otel-collector.yaml

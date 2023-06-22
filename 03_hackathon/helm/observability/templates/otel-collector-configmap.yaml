@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.otelCollector.name }}-config
+data:
+  otel-collector.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    exporters:
+      otlp:
+        endpoint: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}:{{ .Values.grafanaTempo.ports.grpc }}
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          receivers: [ otlp ]
+          exporters: [ otlp ]

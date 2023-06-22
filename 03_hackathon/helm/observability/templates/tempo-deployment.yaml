@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+  labels:
+    app: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/tempo-configmap.yaml") . | sha256sum }}
+    spec:
+      volumes:
+        - name: {{ .Values.grafanaTempo.name }}-data
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: {{ .Values.grafanaTempo.name }}-config
+          configMap:
+            name: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}-config
+      containers:
+        - name: {{ .Release.Name }}-{{ .Values.grafanaTempo.name }}
+          image: "{{ .Values.grafanaTempo.repository }}:{{ .Values.grafanaTempo.tag }}"
+          args:
+            - -config.file=/etc/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.grafanaTempo.ports.grpc }}
+              protocol: TCP
+            - name: tempo
+              containerPort: {{ .Values.grafanaTempo.ports.backend }}
+              protocol: TCP
+          volumeMounts:
+            - name: {{ .Values.grafanaTempo.name }}-data
+              mountPath: "/tmp/tempo"
+            - name: {{ .Values.grafanaTempo.name }}-config
+              mountPath: /etc/tempo.yaml
+              subPath: tempo.yaml

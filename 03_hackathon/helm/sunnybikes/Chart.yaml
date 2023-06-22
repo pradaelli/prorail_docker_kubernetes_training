@@ -1,6 +1,9 @@
 apiVersion: v2
 name: sunnybike
-description: A Helm chart for sunnybikes
+description: """A Helm chart for sunnybikes
+how ro use: lasdlaksd
+
+"""
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -19,3 +22,4 @@ version: 0.4.6
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application.
 appVersion: 0.1.0
+

@@ -1,0 +1,24 @@
+{{ if .Capabilities.APIVersions.Has "networking.istio.io/v1alpha3/VirtualService" }}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.grafana.name }}
+spec:
+  gateways:
+    - istio-system/main
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            prefix: "/{{ .Release.Name }}/"
+        - uri:
+            exact: "/{{ .Release.Name }}"
+      rewrite:
+        uri: "/{{ .Release.Name }}/"
+      route:
+        - destination:
+            host: {{ .Release.Name }}-{{ .Values.grafana.name }}
+            port:
+              number: 3000
+{{ end }}

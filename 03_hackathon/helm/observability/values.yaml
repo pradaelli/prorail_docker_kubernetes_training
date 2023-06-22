@@ -1,0 +1,28 @@
+grafana:
+  name: grafana
+  repository: grafana/grafana
+  tag: "9.5.2"
+  rootUrl: ""
+  ports:
+    frontend: 3000
+  resources:
+    limits:
+      memory: 4Gi
+    requests:
+      cpu: 250m
+      memory: 750Mi
+
+grafanaTempo:
+  name: tempo
+  repository: grafana/tempo
+  tag: latest
+  ports:
+    grpc: 4317
+    backend: 3200
+
+otelCollector:
+  name: otel-collector
+  repository: otel/opentelemetry-collector
+  tag: "0.78.0"
+  ports:
+    grpc: 4317

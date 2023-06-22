@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name}}-{{ .Values.grafana.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name}}-{{ .Values.grafana.name }}
+  template:
+    metadata:
+      name: {{ .Release.Name}}-{{ .Values.grafana.name }}
+      labels:
+        app: {{ .Release.Name}}-{{ .Values.grafana.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/grafana-configmap.yaml") . | sha256sum }}
+    spec:
+      volumes:
+        - name: {{ .Values.grafana.name }}-data-source
+          configMap:
+            name: {{ .Release.Name }}-{{ .Values.grafana.name }}-data-source
+      containers:
+        - name: {{ .Release.Name}}-{{ .Values.grafana.name }}
+          image: "{{ .Values.grafana.repository }}:{{ .Values.grafana.tag }}"
+          ports:
+            - name: grafana
+              containerPort: {{ .Values.grafana.ports.frontend }}
+          env:
+            - name: GF_FEATURE_TOGGLES_ENABLE
+              value: "tracesqlEditor"
+            # - name: GF_SERVER_ROOT_URL
+            #   value: "{{ .Values.grafana.rootUrl}}/{{ .Release.Name }}"
+            # - name: GF_SERVER_SERVE_FROM_SUB_PATH
+            #   value: 'true'
+          volumeMounts:
+            - name: {{ .Values.grafana.name }}-data-source
+              mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              subPath: datasources.yaml
+          resources:
+            {{- toYaml .Values.grafana.resources  | nindent 12 }}
